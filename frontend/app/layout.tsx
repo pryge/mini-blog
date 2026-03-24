@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   description: "My first Mini-blog project",
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,9 +32,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-linear-to-tr from-slate-50 via-white to-blue-50 text-slate-900 font-sans">
         <AuthProvider>
           <Navbar />
-          <main className="grow">
-            {children}
-          </main>
+          <main className="grow">{children}</main>
         </AuthProvider>
       </body>
     </html>
