@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (token: string) => {
     localStorage.setItem('token', token);
     await checkAuth();
-    router.push('/');
+    router.push('/admin');
   };
 
   const logout = () => {
