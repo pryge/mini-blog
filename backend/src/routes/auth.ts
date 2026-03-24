@@ -1,13 +1,26 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+import { z } from 'zod';
 import { prisma } from '../prisma';
 import { protectedRoute } from '../middleware/auth';
+import { validate } from '../middleware/validation';
 
 const router = Router();
 const SECRET_KEY = process.env.JWT_SECRET || "super_duper_secret_key_123";
 
-router.post("/register", async (req, res) => {
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  name: z.string().optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
+router.post("/register", validate(registerSchema), async (req, res) => {
   try {
     const { email, password, name } = req.body;
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -29,7 +42,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", validate(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({where: {email}});
@@ -58,7 +71,7 @@ router.get("/me", protectedRoute, async (req, res) => {
 
     const user = await prisma.user.findUnique({
         where: { id: userId }, 
-        select: { id: true, email: true, name: true }
+        select: { id: true, email: true, name: true, role: true }
     });
 
     if (!user) {

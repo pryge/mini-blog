@@ -1,8 +1,15 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { prisma } from '../prisma';
 import { protectedRoute } from '../middleware/auth';
+import { validate } from '../middleware/validation';
 
 const router = Router();
+
+const postSchema = z.object({
+  title: z.string().min(3).max(100),
+  content: z.string().min(10),
+});
 
 router.get('/', async (req, res) => {
   try {
@@ -28,7 +35,16 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     
     const post = await prisma.post.findUnique({
-      where: {id: id as string}
+      where: {id: id as string},
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        }
+      }
     })
 
     if (!post) {
@@ -41,7 +57,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', protectedRoute, async (req, res) => {
+router.post('/', protectedRoute, validate(postSchema), async (req, res) => {
   try {
     const { title, content } = req.body;
     const authorId = req.userId; 
@@ -62,11 +78,11 @@ router.post('/', protectedRoute, async (req, res) => {
   }
 });
 
-router.put('/:id', protectedRoute, async (req, res) => {
+router.put('/:id', protectedRoute, validate(postSchema), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content } = req.body;
-    const authorId = req.userId;
+    const userId = req.userId;
 
     const post = await prisma.post.findUnique({
       where: {id: id as string}
@@ -76,8 +92,15 @@ router.put('/:id', protectedRoute, async (req, res) => {
       return res.status(404).json({error: "Post not found"})
     }
 
-    if (post.authorId !== authorId) {
-      return res.status(403).json({error: "You are not the author of this post"})
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const isAdmin = user?.role === 'ADMIN';
+
+    if (post.authorId !== userId && !isAdmin) {
+      return res.status(403).json({error: "You are not authorized to edit this post"})
     }
 
     const updatedPost = await prisma.post.update({
@@ -97,7 +120,7 @@ router.put('/:id', protectedRoute, async (req, res) => {
 router.delete('/:id', protectedRoute, async (req, res) => {
   try {
     const { id } = req.params;
-    const authorId = req.userId;
+    const userId = req.userId;
 
     const post = await prisma.post.findUnique({
       where: {id: id as string}
@@ -107,8 +130,15 @@ router.delete('/:id', protectedRoute, async (req, res) => {
       return res.status(404).json({error: "Post not found"})
     }
 
-    if (post.authorId !== authorId) {
-      return res.status(403).json({error: "You are not the author of this post"})
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const isAdmin = user?.role === 'ADMIN';
+
+    if (post.authorId !== userId && !isAdmin) {
+      return res.status(403).json({error: "You are not authorized to delete this post"})
     }
 
     const deletedPost = await prisma.post.delete({
