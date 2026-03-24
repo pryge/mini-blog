@@ -1,0 +1,14 @@
+node_modules
+.env
+.env.test
+
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+/generated/prisma
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
