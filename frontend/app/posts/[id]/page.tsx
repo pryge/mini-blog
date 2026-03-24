@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from "react";
 import api from "@/lib/api";
 import Link from "next/link";
 import { format } from "date-fns";
+import LoadingSpinner from "@/components/loading-spinner";
 
 interface Post {
   id: string;
@@ -39,13 +40,7 @@ export default function PostDetailPage({
     fetchPost();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
 
   if (!post) {
     return (
