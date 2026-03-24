@@ -5,17 +5,7 @@ import api from "@/lib/api";
 import Link from "next/link";
 import PostCard from "@/components/post-card";
 import LoadingSpinner from "@/components/loading-spinner";
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  author: {
-    name: string;
-    email: string;
-  };
-}
+import { Post } from "@/types/post";
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);

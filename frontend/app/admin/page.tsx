@@ -7,25 +7,12 @@ import { useAuth } from "@/context/auth-context";
 import { format } from "date-fns";
 import AdminPostModal from "@/components/admin-post-modal";
 import LoadingSpinner from "@/components/loading-spinner";
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  authorId: string;
-  author: {
-    name: string;
-    email: string;
-  };
-}
+import { Post } from "@/types/post";
 
 export default function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-
-  // Form state
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -85,7 +72,7 @@ export default function AdminDashboard() {
     try {
       await api.delete(`/posts/${id}`);
       fetchPosts();
-    } catch (error) {
+    } catch {
       alert("Error deleting post");
     }
   };
@@ -113,7 +100,7 @@ export default function AdminDashboard() {
         </div>
         <button
           onClick={() => {
-            resetForm(); // Use resetForm to clear fields and editingId
+            resetForm();
             setShowModal(true);
           }}
           className="bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-8 py-3.5 rounded-2xl text-sm font-black transition-all shadow-xl shadow-indigo-200 active:scale-95 flex items-center"

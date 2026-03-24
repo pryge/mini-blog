@@ -3,17 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  author: {
-    name: string;
-    email: string;
-  };
-}
+import { Post } from "@/types/post";
 
 interface PostCardProps {
   post: Post;
