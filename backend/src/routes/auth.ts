@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { prisma } from '../prisma';
+import { protectedRoute } from '../middleware/auth';
 
 const router = Router();
 const SECRET_KEY = process.env.JWT_SECRET || "super_duper_secret_key_123";
@@ -45,5 +46,22 @@ router.post("/login", async (req, res) => {
     res.status(500).json({error: "An occured problem with login"})
   }
 })
+
+
+router.get("/me", protectedRoute, async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const user = await prisma.user.findUnique({where: {id: Number(userId)}, select: {id: true, email: true, name: true}});
+
+    if (!user) {
+      return res.status(404).json({error: "User not found"})
+    }
+
+    res.status(200).json({ message: "Profile found", userId });
+  } catch (error) {
+    res.status(500).json({ error: "Error with fetching profile" });
+  }
+});
 
 export default router;
