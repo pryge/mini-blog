@@ -43,7 +43,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({userId: user.id}, SECRET_KEY, {expiresIn: "1h"})
     res.status(200).json({message: "Login successful!", token})
   } catch (error) {
-    res.status(500).json({error: "An occured problem with login"})
+    res.status(500).json({error: "An error occurred during login"})
   }
 })
 
@@ -52,15 +52,22 @@ router.get("/me", protectedRoute, async (req, res) => {
   try {
     const userId = req.userId;
 
-    const user = await prisma.user.findUnique({where: {id: Number(userId)}, select: {id: true, email: true, name: true}});
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { id: userId }, 
+        select: { id: true, email: true, name: true }
+    });
 
     if (!user) {
       return res.status(404).json({error: "User not found"})
     }
 
-    res.status(200).json({ message: "Profile found", userId });
+    res.status(200).json({ message: "Profile found", user });
   } catch (error) {
-    res.status(500).json({ error: "Error with fetching profile" });
+    res.status(500).json({ error: "Error fetching profile" });
   }
 });
 

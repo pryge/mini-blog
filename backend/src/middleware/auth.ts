@@ -6,7 +6,7 @@ const SECRET_KEY = process.env.JWT_SECRET || "super_duper_secret_key_123";
 declare global {
   namespace Express {
     interface Request {
-      userId?: number;
+      userId?: string;
     }
   }
 }
@@ -25,7 +25,7 @@ export const protectedRoute = (req: Request, res: Response, next: NextFunction):
       return;
     }
 
-    const decoded = jwt.verify(token, SECRET_KEY) as { userId: number };
+    const decoded = jwt.verify(token, SECRET_KEY) as { userId: string };
     req.userId = decoded.userId;
 
     next();

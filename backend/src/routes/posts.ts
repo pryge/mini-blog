@@ -7,7 +7,15 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const posts = await prisma.post.findMany({
-      include: { author: true },
+      include: { 
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        } 
+      },
     });
     res.status(200).json(posts);
   } catch (error) {
@@ -20,7 +28,7 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     
     const post = await prisma.post.findUnique({
-      where: {id: Number(id)}
+      where: {id: id as string}
     })
 
     if (!post) {
@@ -44,11 +52,11 @@ router.post('/', protectedRoute, async (req, res) => {
       data: {
         title,
         content,
-        authorId,
+        authorId: authorId!,
       }
     })
     
-    res.status(201).json({ message: "Post created successfully" });
+    res.status(201).json(post);
   } catch (error) {
     res.status(500).json({ error: "Error creating post" });
   }
@@ -61,7 +69,7 @@ router.put('/:id', protectedRoute, async (req, res) => {
     const authorId = req.userId;
 
     const post = await prisma.post.findUnique({
-      where: {id: Number(id)}
+      where: {id: id as string}
     })
 
     if (!post) {
@@ -73,14 +81,14 @@ router.put('/:id', protectedRoute, async (req, res) => {
     }
 
     const updatedPost = await prisma.post.update({
-      where: {id: Number(id)},
+      where: {id: id as string},
       data: {
         title,
         content,
       }
     })
 
-    res.status(200).json({ message: `Post updated successfully` });
+    res.status(200).json(updatedPost);
   } catch (error) {
     res.status(500).json({ error: "Error updating post" });
   }
@@ -92,7 +100,7 @@ router.delete('/:id', protectedRoute, async (req, res) => {
     const authorId = req.userId;
 
     const post = await prisma.post.findUnique({
-      where: {id: Number(id)}
+      where: {id: id as string}
     })
 
     if (!post) {
@@ -104,10 +112,10 @@ router.delete('/:id', protectedRoute, async (req, res) => {
     }
 
     const deletedPost = await prisma.post.delete({
-      where: {id: Number(id)}
+      where: {id: id as string}
     })
 
-    res.status(200).json({ message: `Post deleted successfully` });
+    res.status(200).json(deletedPost);
   } catch (error) {
     res.status(500).json({ error: "Error deleting post" });
   }
